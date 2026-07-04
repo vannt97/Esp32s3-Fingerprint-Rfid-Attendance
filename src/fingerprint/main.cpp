@@ -142,6 +142,84 @@ void testScanOnce() {
     }
 }
 
+// Enroll a new fingerprint into the given ID slot (1–127)
+bool enrollFingerprint(uint8_t id) {
+    Serial.printf("\n[ENROLL] ID slot: %d\n", id);
+
+    // --- Lần 1 ---
+    Serial.println(F("  Buoc 1: Dat ngon tay len cam bien..."));
+    uint8_t result = FINGERPRINT_NOFINGER;
+    while (result != FINGERPRINT_OK) {
+        result = finger.getImage();
+        if (result == FINGERPRINT_NOFINGER) { delay(50); continue; }
+        if (result != FINGERPRINT_OK) {
+            Serial.printf("  [ERR] %s\n", errString(result));
+            return false;
+        }
+    }
+    Serial.println(F("  [OK] Anh 1 chup xong"));
+
+    result = finger.image2Tz(1);
+    if (result != FINGERPRINT_OK) {
+        Serial.printf("  [ERR] Feature 1: %s\n", errString(result));
+        return false;
+    }
+
+    // --- Nhấc tay ---
+    Serial.println(F("  Nhac ngon tay ra..."));
+    while (finger.getImage() != FINGERPRINT_NOFINGER) delay(50);
+    delay(300);
+
+    // --- Lần 2 ---
+    Serial.println(F("  Buoc 2: Dat lai ngon tay..."));
+    result = FINGERPRINT_NOFINGER;
+    while (result != FINGERPRINT_OK) {
+        result = finger.getImage();
+        if (result == FINGERPRINT_NOFINGER) { delay(50); continue; }
+        if (result != FINGERPRINT_OK) {
+            Serial.printf("  [ERR] %s\n", errString(result));
+            return false;
+        }
+    }
+    Serial.println(F("  [OK] Anh 2 chup xong"));
+
+    result = finger.image2Tz(2);
+    if (result != FINGERPRINT_OK) {
+        Serial.printf("  [ERR] Feature 2: %s\n", errString(result));
+        return false;
+    }
+
+    // --- Tạo và lưu template ---
+    result = finger.createModel();
+    if (result != FINGERPRINT_OK) {
+        Serial.printf("  [ERR] Create model: %s\n", errString(result));
+        return false;
+    }
+
+    result = finger.storeModel(id);
+    if (result != FINGERPRINT_OK) {
+        Serial.printf("  [ERR] Store model: %s\n", errString(result));
+        return false;
+    }
+
+    Serial.printf("  [PASS] Van tay da luu vao ID %d\n\n", id);
+    return true;
+}
+
+// Continuous scan — prints FINGERPRINT OK when a finger is detected
+void scanFingerprint() {
+    uint8_t result = finger.getImage();
+    if (result != FINGERPRINT_OK) return;
+
+    result = finger.image2Tz();
+    if (result != FINGERPRINT_OK) return;
+
+    result = finger.fingerSearch();
+    if (result == FINGERPRINT_OK) {
+        Serial.println(F("FINGERPRINT OK"));
+    }
+}
+
 // ---------- setup / loop ----------
 
 void setup() {
@@ -170,30 +248,40 @@ void setup() {
     testGetParams();
     testGetTemplateCount();
 
-    Serial.println(F("Commands: [s] scan once | [r] repeat scan | [i] info"));
+    Serial.println(F("Ready — đưa ngón tay vào để nhận diện..."));
+    Serial.println(F("Commands: [e<id>] enroll (vd: e1) | [s] scan once | [i] info"));
 }
 
 void loop() {
-    if (!Serial.available()) return;
+    scanFingerprint();
 
-    char cmd = Serial.read();
-    switch (cmd) {
-        case 's':
-            testScanOnce();
-            break;
-        case 'r':
-            Serial.println(F("Continuous scan mode — send any key to stop"));
-            while (!Serial.available()) {
-                testScanOnce();
-                delay(1000);
+    if (Serial.available()) {
+        char cmd = Serial.read();
+        switch (cmd) {
+            case 'e': {
+                // Đọc số ID tiếp theo, vd: gõ "e1" → enroll vào slot 1
+                uint32_t deadline = millis() + 2000;
+                while (!Serial.available() && millis() < deadline) delay(10);
+                uint8_t id = Serial.available() ? Serial.parseInt() : 1;
+                if (id < 1 || id > 127) {
+                    Serial.println(F("[ERR] ID phai tu 1 den 127"));
+                } else {
+                    enrollFingerprint(id);
+                    testGetTemplateCount();
+                }
+                break;
             }
-            Serial.read(); // consume stop key
-            break;
-        case 'i':
-            testGetParams();
-            testGetTemplateCount();
-            break;
-        default:
-            break;
+            case 's':
+                testScanOnce();
+                break;
+            case 'i':
+                testGetParams();
+                testGetTemplateCount();
+                break;
+            default:
+                break;
+        }
     }
+
+    delay(50);
 }

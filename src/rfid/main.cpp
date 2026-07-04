@@ -83,20 +83,17 @@ bool testConnection() {
     return false;
 }
 
-void testScanCard() {
+void scanCard() {
     uint8_t uid[7] = {0};
     uint8_t uidLen = 0;
 
-    Serial.println(F("[TEST] Waiting for card/tag... (5s)"));
-    if (!nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLen, 5000)) {
-        Serial.println(F("[INFO] No card detected\n"));
-        return;
-    }
+    if (!nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLen, 1000)) return;
 
-    Serial.println(F("[PASS] Card detected!"));
     printUID(uid, uidLen);
-    Serial.printf("  Type    : %s\n", cardTypeName(uidLen));
-    Serial.printf("  UID len : %d bytes\n\n", uidLen);
+    // Serial.printf("  Type : %s\n", cardTypeName(uidLen));
+    // Serial.printf("  Len  : %d bytes\n\n", uidLen);
+
+    delay(500);
 }
 
 // ---------- setup / loop ----------
@@ -114,26 +111,9 @@ void setup() {
     }
 
     nfc.SAMConfig();
-    Serial.println(F("Commands: [s] scan once | [r] repeat scan"));
+    Serial.println(F("Ready — đưa thẻ vào để đọc UID...\n"));
 }
 
 void loop() {
-    if (!Serial.available()) return;
-
-    char cmd = Serial.read();
-    switch (cmd) {
-        case 's':
-            testScanCard();
-            break;
-        case 'r':
-            Serial.println(F("Continuous scan — send any key to stop"));
-            while (!Serial.available()) {
-                testScanCard();
-            }
-            Serial.read();
-            Serial.println(F("Stopped.\n"));
-            break;
-        default:
-            break;
-    }
+    scanCard();
 }
