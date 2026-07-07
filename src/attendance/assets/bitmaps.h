@@ -15,3 +15,4 @@ extern const unsigned char image_smartphone_bits[];
 extern const unsigned char image_scroll_track_bits[];
 extern const unsigned char image_weather_cloud_sunny_bits[];
 extern const unsigned char image_bike_bits[];
+extern const unsigned char image_phone_contacts_bits[];

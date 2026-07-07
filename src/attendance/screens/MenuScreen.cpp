@@ -8,6 +8,7 @@ const MenuItem MENU_ITEMS[] = {
     {image_wifi_not_connected_bits,  19, 16, 4,  0,  "Block Signals", ScreenId::SIGNAL_BLOCK},
     {image_weather_cloud_sunny_bits, 17, 16, 6,  0,  "Weather",       ScreenId::WEATHER},
     {image_bike_bits,                17, 16, 4, -2,  "Game",          ScreenId::GAME},
+    {image_phone_contacts_bits,      13, 16, 4,  -2,  "Employee",      ScreenId::EMPLOYEE},
 };
 
 const int MENU_ITEM_COUNT = sizeof(MENU_ITEMS) / sizeof(MENU_ITEMS[0]);

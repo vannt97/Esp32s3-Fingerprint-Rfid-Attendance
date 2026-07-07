@@ -15,6 +15,7 @@
 #include "screens/WeatherScreen.h"
 #include "screens/SignalBlockScreen.h"
 #include "screens/GameScreen.h"
+#include "screens/EmployeeScreen.h"
 class ScreenManager
 {
 public:
@@ -47,4 +48,5 @@ private:
     WeatherScreen _weatherScreen;
     SignalBlockScreen _signalBlockScreen;
     GameScreen _gameScreen;
+    EmployeeScreen _employeeScreen;
 };

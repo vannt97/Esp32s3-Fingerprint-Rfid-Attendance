@@ -10,4 +10,5 @@ enum class ScreenId {
     WEATHER,
     SIGNAL_BLOCK,
     GAME,
+    EMPLOYEE,
 };
