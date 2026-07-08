@@ -15,7 +15,10 @@ ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, Wi
       _weatherScreen(*this),
       _signalBlockScreen(*this),
       _gameScreen(*this),
-      _employeeScreen(*this)
+      _employeeScreen(*this),
+      _enrollScreen(*this),
+      _fingerSelectScreen(*this),
+      _fingerScanScreen(*this)
 
 {
 }
@@ -44,6 +47,9 @@ void ScreenManager::showScreen(ScreenId id)
         case ScreenId::SIGNAL_BLOCK:    target = &_signalBlockScreen;     break;
         case ScreenId::GAME:            target = &_gameScreen;            break;
         case ScreenId::EMPLOYEE:        target = &_employeeScreen;        break;
+        case ScreenId::ENROLL:          target = &_enrollScreen;          break;
+        case ScreenId::FINGER_SELECT:   target = &_fingerSelectScreen;    break;
+        case ScreenId::FINGER_SCAN:     target = &_fingerScanScreen;      break;
     }
     _switchTo(target);
 }

@@ -1,29 +1,29 @@
-#include "EmployeeScreen.h"
+#include "EnrollScreen.h"
 #include "display/ScreenManager.h"
 
-EmployeeScreen::EmployeeScreen(ScreenManager &sm)
+EnrollScreen::EnrollScreen(ScreenManager &sm)
     : _screenManager(sm),
       _displayManager(sm.getDisplayManager())
 {
 }
 
-void EmployeeScreen::onEnter()
+void EnrollScreen::onEnter()
 {
     _menuIdx = 0;
     _render();
 }
 
-void EmployeeScreen::onExit()
+void EnrollScreen::onExit()
 {
     _displayManager.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_BLACK);
 }
 
-void EmployeeScreen::_render()
+void EnrollScreen::_render()
 {
     _displayManager.clear();
     _displayManager.setTextColor(SSD1306_WHITE);
     _displayManager.setTextWrap(false);
-    _displayManager.print(0, 0, "Employee");
+    _displayManager.print(0, 0, "Enroll");
     _displayManager.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
 
     for (int i = 0; i < ITEM_COUNT; i++)
@@ -46,7 +46,7 @@ void EmployeeScreen::_render()
     _displayManager.update();
 }
 
-void EmployeeScreen::loop()
+void EnrollScreen::loop()
 {
     Button btn = _screenManager.getButtonManager().getPressed();
     switch (btn)
@@ -59,11 +59,11 @@ void EmployeeScreen::loop()
         break;
     case Button::SELECT:
         if (_menuIdx == 0)
-            _screenManager.showScreen(ScreenId::ENROLL);
-        // TODO: navigate to Users screen
+            _screenManager.showScreen(ScreenId::FINGER_SELECT);
+        // TODO: navigate to Card Number screen
         break;
     case Button::EXIT:
-        _screenManager.showScreen(ScreenId::MENU);
+        _screenManager.showScreen(ScreenId::EMPLOYEE);
         break;
     default:
         break;

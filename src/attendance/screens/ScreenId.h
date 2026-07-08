@@ -11,4 +11,7 @@ enum class ScreenId {
     SIGNAL_BLOCK,
     GAME,
     EMPLOYEE,
+    ENROLL,
+    FINGER_SELECT,
+    FINGER_SCAN,
 };

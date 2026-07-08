@@ -16,6 +16,9 @@
 #include "screens/SignalBlockScreen.h"
 #include "screens/GameScreen.h"
 #include "screens/EmployeeScreen.h"
+#include "screens/EnrollScreen.h"
+#include "screens/FingerSelectScreen.h"
+#include "screens/FingerScanScreen.h"
 class ScreenManager
 {
 public:
@@ -30,6 +33,9 @@ public:
     IScreen *getCurrentScreen();
     void loop();
 
+    void setSelectedFingerIndex(int idx) { _selectedFingerIndex = idx; }
+    int getSelectedFingerIndex() const { return _selectedFingerIndex; }
+
 private:
     void _switchTo(IScreen *screen);
 
@@ -38,6 +44,7 @@ private:
     WifiManager &_wifiManager;
     ButtonManager &_buttonManager;
     IScreen *_currentScreen = nullptr;
+    int _selectedFingerIndex = 0;
 
     HomeScreen _homeScreen;
     ConnectingWifiScreen _connectingWifiScreen;
@@ -49,4 +56,7 @@ private:
     SignalBlockScreen _signalBlockScreen;
     GameScreen _gameScreen;
     EmployeeScreen _employeeScreen;
+    EnrollScreen _enrollScreen;
+    FingerSelectScreen _fingerSelectScreen;
+    FingerScanScreen _fingerScanScreen;
 };
