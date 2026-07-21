@@ -189,5 +189,7 @@ void FingerScanScreen::_doSave()
     }
 
     _savedTemplateId = id;
+    _screenManager.getEnrollmentStore().saveFingerMapping(
+        _screenManager.getSelectedEmployeeId(), _fingerIndex, id);
     _enterState(State::SUCCESS);
 }

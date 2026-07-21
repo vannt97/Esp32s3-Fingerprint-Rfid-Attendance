@@ -76,7 +76,7 @@ void CardScanScreen::loop()
 
     if (btn == Button::EXIT)
     {
-        _screenManager.showScreen(ScreenId::ENROLL);
+        _screenManager.showScreen(ScreenId::EMPLOYEE_SELECT);
         return;
     }
 
@@ -90,12 +90,16 @@ void CardScanScreen::loop()
         break;
     case State::DETECTED:
         if (btn == Button::SELECT)
+        {
+            _screenManager.getEnrollmentStore().saveCardMapping(
+                _screenManager.getSelectedEmployeeId(), _uid);
             _enterState(State::SUCCESS);
+        }
         break;
     case State::SUCCESS:
     case State::ERROR:
         if (btn == Button::SELECT)
-            _screenManager.showScreen(ScreenId::ENROLL);
+            _screenManager.showScreen(ScreenId::EMPLOYEE_SELECT);
         break;
     }
 }

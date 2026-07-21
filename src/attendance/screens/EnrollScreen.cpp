@@ -58,10 +58,8 @@ void EnrollScreen::loop()
         if (_menuIdx < ITEM_COUNT - 1) { _menuIdx++; _render(); }
         break;
     case Button::SELECT:
-        if (_menuIdx == 0)
-            _screenManager.showScreen(ScreenId::FINGER_SELECT);
-        else
-            _screenManager.showScreen(ScreenId::CARD_SCAN);
+        _screenManager.setPendingEnrollTarget(_menuIdx == 0 ? EnrollTarget::FINGER : EnrollTarget::CARD);
+        _screenManager.showScreen(ScreenId::EMPLOYEE_SELECT);
         break;
     case Button::EXIT:
         _screenManager.showScreen(ScreenId::EMPLOYEE);

@@ -7,6 +7,7 @@
 #include "services/TimeManager.h"
 #include "services/FingerprintService.h"
 #include "services/RfidService.h"
+#include "services/EnrollmentStore.h"
 
 // ── Khai báo ──────────────────────────────────
 WifiManager wifiManager(WIFI_SSID, WIFI_PASSWORD);
@@ -15,6 +16,7 @@ TimeManager timeManager;
 ButtonManager buttonManager;
 FingerprintService fingerprintService;
 RfidService rfidService;
+EnrollmentStore enrollmentStore;
 Timeout wifiTimer(CONNECT_WIFI_TIMEOUT);
 Timeout setupTimeTimer(TIME_TIMEOUT);
 
@@ -33,9 +35,10 @@ void setup()
     bool rfidOk = rfidService.begin();
     Serial.printf("Fingerprint sensor: %s\n", fpOk ? "OK" : "NOT FOUND");
     Serial.printf("RFID reader: %s\n", rfidOk ? "OK" : "NOT FOUND");
+    enrollmentStore.begin();
 
     screenManager = new ScreenManager(DisplayManager::getInstance(), timeManager, wifiManager, buttonManager,
-                                       fingerprintService, rfidService);
+                                       fingerprintService, rfidService, enrollmentStore);
 
     while (wifiManager.isConnecting() && wifiTimer.isRunning())
     {

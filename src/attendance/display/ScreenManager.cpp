@@ -2,13 +2,14 @@
 
 // ── Constructor nhận DisplayManager ───────────
 ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm,
-                              FingerprintService &fps, RfidService &rs)
+                              FingerprintService &fps, RfidService &rs, EnrollmentStore &es)
     : _displayManager(displayManager),
       _timeManager(tm),
       _wifiManager(wm),
       _buttonManager(bm),
       _fingerprintService(fps),
       _rfidService(rs),
+      _enrollmentStore(es),
       _menuScreen(*this), // truyền ScreenManager vào MenuScreen
       _homeScreen(*this),
       _connectingWifiScreen(*this),
@@ -20,6 +21,7 @@ ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, Wi
       _gameScreen(*this),
       _employeeScreen(*this),
       _enrollScreen(*this),
+      _employeeSelectScreen(*this),
       _fingerSelectScreen(*this),
       _fingerScanScreen(*this),
       _usersScreen(*this),
@@ -53,6 +55,7 @@ void ScreenManager::showScreen(ScreenId id)
         case ScreenId::GAME:            target = &_gameScreen;            break;
         case ScreenId::EMPLOYEE:        target = &_employeeScreen;        break;
         case ScreenId::ENROLL:          target = &_enrollScreen;          break;
+        case ScreenId::EMPLOYEE_SELECT: target = &_employeeSelectScreen;  break;
         case ScreenId::FINGER_SELECT:   target = &_fingerSelectScreen;    break;
         case ScreenId::FINGER_SCAN:     target = &_fingerScanScreen;      break;
         case ScreenId::USERS:           target = &_usersScreen;           break;

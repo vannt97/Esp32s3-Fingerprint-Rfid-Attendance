@@ -12,6 +12,9 @@
 #include "services/TimeManager.h"
 #include "services/FingerprintService.h"
 #include "services/RfidService.h"
+#include "services/EnrollmentStore.h"
+#include "screens/EnrollTarget.h"
+#include "screens/EmployeeSelectScreen.h"
 #include "screens/BoardInfoScreen.h"
 #include "screens/StatusScreen.h"
 #include "screens/WeatherScreen.h"
@@ -27,7 +30,7 @@ class ScreenManager
 {
 public:
     explicit ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm,
-                            FingerprintService &fps, RfidService &rs);
+                            FingerprintService &fps, RfidService &rs, EnrollmentStore &es);
 
     void showScreen(ScreenId id);
 
@@ -37,11 +40,18 @@ public:
     WifiManager &getWifiManager() { return _wifiManager; }
     FingerprintService &getFingerprintService() { return _fingerprintService; }
     RfidService &getRfidService() { return _rfidService; }
+    EnrollmentStore &getEnrollmentStore() { return _enrollmentStore; }
     IScreen *getCurrentScreen();
     void loop();
 
     void setSelectedFingerIndex(int idx) { _selectedFingerIndex = idx; }
     int getSelectedFingerIndex() const { return _selectedFingerIndex; }
+
+    void setSelectedEmployeeId(uint16_t id) { _selectedEmployeeId = id; }
+    uint16_t getSelectedEmployeeId() const { return _selectedEmployeeId; }
+
+    void setPendingEnrollTarget(EnrollTarget t) { _pendingEnrollTarget = t; }
+    EnrollTarget getPendingEnrollTarget() const { return _pendingEnrollTarget; }
 
 private:
     void _switchTo(IScreen *screen);
@@ -52,8 +62,11 @@ private:
     ButtonManager &_buttonManager;
     FingerprintService &_fingerprintService;
     RfidService &_rfidService;
+    EnrollmentStore &_enrollmentStore;
     IScreen *_currentScreen = nullptr;
     int _selectedFingerIndex = 0;
+    uint16_t _selectedEmployeeId = 0;
+    EnrollTarget _pendingEnrollTarget = EnrollTarget::FINGER;
 
     HomeScreen _homeScreen;
     ConnectingWifiScreen _connectingWifiScreen;
@@ -66,6 +79,7 @@ private:
     GameScreen _gameScreen;
     EmployeeScreen _employeeScreen;
     EnrollScreen _enrollScreen;
+    EmployeeSelectScreen _employeeSelectScreen;
     FingerSelectScreen _fingerSelectScreen;
     FingerScanScreen _fingerScanScreen;
     UsersScreen _usersScreen;

@@ -102,7 +102,7 @@ void FingerSelectScreen::loop()
         _screenManager.showScreen(ScreenId::FINGER_SCAN);
         break;
     case Button::EXIT:
-        _screenManager.showScreen(ScreenId::ENROLL);
+        _screenManager.showScreen(ScreenId::EMPLOYEE_SELECT);
         break;
     default:
         break;

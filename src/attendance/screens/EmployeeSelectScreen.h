@@ -4,12 +4,14 @@
 
 class ScreenManager;
 
-// Mô phỏng UI danh sách user, dữ liệu mock cứng (chưa có storage thật).
-// Chỉ xem danh sách, không có trang chi tiết.
-class UsersScreen : public IScreen
+// Chọn nhân viên trước khi enroll vân tay/thẻ. EnrollScreen đặt
+// EnrollTarget (FINGER/CARD) trước khi vào màn này; sau khi chọn xong,
+// lưu employee id vào ScreenManager rồi rẽ sang FINGER_SELECT hoặc
+// CARD_SCAN tương ứng.
+class EmployeeSelectScreen : public IScreen
 {
 public:
-    explicit UsersScreen(ScreenManager &sm);
+    explicit EmployeeSelectScreen(ScreenManager &sm);
     void onEnter() override;
     void onExit() override;
     void loop() override;

@@ -1,31 +1,31 @@
-#include "UsersScreen.h"
+#include "EmployeeSelectScreen.h"
 #include "display/ScreenManager.h"
 
-UsersScreen::UsersScreen(ScreenManager &sm)
+EmployeeSelectScreen::EmployeeSelectScreen(ScreenManager &sm)
     : _screenManager(sm),
       _displayManager(sm.getDisplayManager())
 {
 }
 
-void UsersScreen::onEnter()
+void EmployeeSelectScreen::onEnter()
 {
     _selectedIndex = 0;
     _windowStart = 0;
     _render();
 }
 
-void UsersScreen::onExit()
+void EmployeeSelectScreen::onExit()
 {
     _displayManager.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_BLACK);
 }
 
-void UsersScreen::_render()
+void EmployeeSelectScreen::_render()
 {
     _displayManager.clear();
     _displayManager.setTextColor(SSD1306_WHITE);
     _displayManager.setTextWrap(false);
 
-    _displayManager.print(0, 0, "Users");
+    _displayManager.print(0, 0, "Select Employee");
     _displayManager.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
 
     for (int i = 0; i < VISIBLE_COUNT; i++)
@@ -50,11 +50,12 @@ void UsersScreen::_render()
     _displayManager.setTextColor(SSD1306_WHITE);
     _drawScrollbar();
 
+    _displayManager.print(13, 53, "Select");
     _displayManager.print(89, 53, "Exit");
     _displayManager.update();
 }
 
-void UsersScreen::_drawScrollbar()
+void EmployeeSelectScreen::_drawScrollbar()
 {
     const int trackX = 125;
     const int trackY = ITEM_Y0;
@@ -73,7 +74,7 @@ void UsersScreen::_drawScrollbar()
     _displayManager.fillRect(trackX - 1, thumbY, 3, thumbH, SSD1306_WHITE);
 }
 
-void UsersScreen::loop()
+void EmployeeSelectScreen::loop()
 {
     Button btn = _screenManager.getButtonManager().getPressed();
     switch (btn)
@@ -96,8 +97,15 @@ void UsersScreen::loop()
             _render();
         }
         break;
+    case Button::SELECT:
+        _screenManager.setSelectedEmployeeId(EMPLOYEES[_selectedIndex].id);
+        if (_screenManager.getPendingEnrollTarget() == EnrollTarget::FINGER)
+            _screenManager.showScreen(ScreenId::FINGER_SELECT);
+        else
+            _screenManager.showScreen(ScreenId::CARD_SCAN);
+        break;
     case Button::EXIT:
-        _screenManager.showScreen(ScreenId::EMPLOYEE);
+        _screenManager.showScreen(ScreenId::ENROLL);
         break;
     default:
         break;

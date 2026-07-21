@@ -12,6 +12,7 @@ enum class ScreenId {
     GAME,
     EMPLOYEE,
     ENROLL,
+    EMPLOYEE_SELECT,
     FINGER_SELECT,
     FINGER_SCAN,
     USERS,
