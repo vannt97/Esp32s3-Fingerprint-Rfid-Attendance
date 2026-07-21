@@ -1,11 +1,14 @@
 #include "ScreenManager.h"
 
 // ── Constructor nhận DisplayManager ───────────
-ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm)
+ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm,
+                              FingerprintService &fps, RfidService &rs)
     : _displayManager(displayManager),
       _timeManager(tm),
       _wifiManager(wm),
       _buttonManager(bm),
+      _fingerprintService(fps),
+      _rfidService(rs),
       _menuScreen(*this), // truyền ScreenManager vào MenuScreen
       _homeScreen(*this),
       _connectingWifiScreen(*this),
@@ -18,7 +21,9 @@ ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, Wi
       _employeeScreen(*this),
       _enrollScreen(*this),
       _fingerSelectScreen(*this),
-      _fingerScanScreen(*this)
+      _fingerScanScreen(*this),
+      _usersScreen(*this),
+      _cardScanScreen(*this)
 
 {
 }
@@ -50,6 +55,8 @@ void ScreenManager::showScreen(ScreenId id)
         case ScreenId::ENROLL:          target = &_enrollScreen;          break;
         case ScreenId::FINGER_SELECT:   target = &_fingerSelectScreen;    break;
         case ScreenId::FINGER_SCAN:     target = &_fingerScanScreen;      break;
+        case ScreenId::USERS:           target = &_usersScreen;           break;
+        case ScreenId::CARD_SCAN:       target = &_cardScanScreen;        break;
     }
     _switchTo(target);
 }

@@ -60,7 +60,8 @@ void EnrollScreen::loop()
     case Button::SELECT:
         if (_menuIdx == 0)
             _screenManager.showScreen(ScreenId::FINGER_SELECT);
-        // TODO: navigate to Card Number screen
+        else
+            _screenManager.showScreen(ScreenId::CARD_SCAN);
         break;
     case Button::EXIT:
         _screenManager.showScreen(ScreenId::EMPLOYEE);

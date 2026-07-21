@@ -14,4 +14,6 @@ enum class ScreenId {
     ENROLL,
     FINGER_SELECT,
     FINGER_SCAN,
+    USERS,
+    CARD_SCAN,
 };

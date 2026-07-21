@@ -60,7 +60,8 @@ void EmployeeScreen::loop()
     case Button::SELECT:
         if (_menuIdx == 0)
             _screenManager.showScreen(ScreenId::ENROLL);
-        // TODO: navigate to Users screen
+        else
+            _screenManager.showScreen(ScreenId::USERS);
         break;
     case Button::EXIT:
         _screenManager.showScreen(ScreenId::MENU);

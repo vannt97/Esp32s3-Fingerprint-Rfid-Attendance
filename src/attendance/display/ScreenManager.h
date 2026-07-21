@@ -10,6 +10,8 @@
 #include "input/ButtonManager.h"
 #include "services/WifiManager.h"
 #include "services/TimeManager.h"
+#include "services/FingerprintService.h"
+#include "services/RfidService.h"
 #include "screens/BoardInfoScreen.h"
 #include "screens/StatusScreen.h"
 #include "screens/WeatherScreen.h"
@@ -19,10 +21,13 @@
 #include "screens/EnrollScreen.h"
 #include "screens/FingerSelectScreen.h"
 #include "screens/FingerScanScreen.h"
+#include "screens/UsersScreen.h"
+#include "screens/CardScanScreen.h"
 class ScreenManager
 {
 public:
-    explicit ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm);
+    explicit ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm,
+                            FingerprintService &fps, RfidService &rs);
 
     void showScreen(ScreenId id);
 
@@ -30,6 +35,8 @@ public:
     TimeManager &getTimeManager() { return _timeManager; }
     ButtonManager &getButtonManager() { return _buttonManager; }
     WifiManager &getWifiManager() { return _wifiManager; }
+    FingerprintService &getFingerprintService() { return _fingerprintService; }
+    RfidService &getRfidService() { return _rfidService; }
     IScreen *getCurrentScreen();
     void loop();
 
@@ -43,6 +50,8 @@ private:
     TimeManager &_timeManager;
     WifiManager &_wifiManager;
     ButtonManager &_buttonManager;
+    FingerprintService &_fingerprintService;
+    RfidService &_rfidService;
     IScreen *_currentScreen = nullptr;
     int _selectedFingerIndex = 0;
 
@@ -59,4 +68,6 @@ private:
     EnrollScreen _enrollScreen;
     FingerSelectScreen _fingerSelectScreen;
     FingerScanScreen _fingerScanScreen;
+    UsersScreen _usersScreen;
+    CardScanScreen _cardScanScreen;
 };
