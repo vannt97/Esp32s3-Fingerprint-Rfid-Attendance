@@ -18,3 +18,23 @@ bool EnrollmentStore::saveCardMapping(uint16_t employeeId, const String &uid)
     snprintf(key, sizeof(key), "c%u", employeeId);
     return _prefs.putString(key, uid) > 0;
 }
+
+bool EnrollmentStore::getFingerMapping(uint16_t employeeId, uint8_t fingerPosition, uint16_t &templateIdOut)
+{
+    char key[16];
+    snprintf(key, sizeof(key), "f%u_%u", employeeId, fingerPosition);
+    if (!_prefs.isKey(key))
+        return false;
+    templateIdOut = (uint16_t)_prefs.getUInt(key);
+    return true;
+}
+
+bool EnrollmentStore::getCardMapping(uint16_t employeeId, String &uidOut)
+{
+    char key[16];
+    snprintf(key, sizeof(key), "c%u", employeeId);
+    if (!_prefs.isKey(key))
+        return false;
+    uidOut = _prefs.getString(key);
+    return true;
+}

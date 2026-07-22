@@ -189,7 +189,15 @@ void FingerScanScreen::_doSave()
     }
 
     _savedTemplateId = id;
-    _screenManager.getEnrollmentStore().saveFingerMapping(
-        _screenManager.getSelectedEmployeeId(), _fingerIndex, id);
+
+    uint16_t employeeId = _screenManager.getSelectedEmployeeId();
+    auto &store = _screenManager.getEnrollmentStore();
+    store.saveFingerMapping(employeeId, _fingerIndex, id);
+
+    uint16_t verify = 0;
+    store.getFingerMapping(employeeId, _fingerIndex, verify);
+    Serial.printf("[Enroll] employee=%u finger=%d template=%u (saved=%s)\n",
+                  employeeId, _fingerIndex, verify, verify == id ? "OK" : "MISMATCH");
+
     _enterState(State::SUCCESS);
 }

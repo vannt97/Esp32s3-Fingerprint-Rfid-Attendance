@@ -13,6 +13,10 @@ public:
     bool saveFingerMapping(uint16_t employeeId, uint8_t fingerPosition, uint16_t templateId);
     bool saveCardMapping(uint16_t employeeId, const String &uid);
 
+    // Đọc lại — dùng để verify sau khi ghi, và cho luồng check-in sau này.
+    bool getFingerMapping(uint16_t employeeId, uint8_t fingerPosition, uint16_t &templateIdOut);
+    bool getCardMapping(uint16_t employeeId, String &uidOut);
+
 private:
     Preferences _prefs;
 };

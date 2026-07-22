@@ -8,6 +8,8 @@
 #include "services/FingerprintService.h"
 #include "services/RfidService.h"
 #include "services/EnrollmentStore.h"
+#include "screens/EmployeeData.h"
+#include "screens/FingerNames.h"
 
 // ── Khai báo ──────────────────────────────────
 WifiManager wifiManager(WIFI_SSID, WIFI_PASSWORD);
@@ -36,6 +38,24 @@ void setup()
     Serial.printf("Fingerprint sensor: %s\n", fpOk ? "OK" : "NOT FOUND");
     Serial.printf("RFID reader: %s\n", rfidOk ? "OK" : "NOT FOUND");
     enrollmentStore.begin();
+
+    // Dump tạm để verify mapping còn sống sau reset (bỏ khi đã có màn hình xem thật).
+    Serial.println("=== Enrollment mappings ===");
+    for (int i = 0; i < EMPLOYEE_COUNT; i++)
+    {
+        uint16_t id = EMPLOYEES[i].id;
+        String cardUid;
+        if (enrollmentStore.getCardMapping(id, cardUid))
+            Serial.printf("  %s (id=%u): card=%s\n", EMPLOYEES[i].name, id, cardUid.c_str());
+
+        for (int f = 0; f < FINGER_COUNT; f++)
+        {
+            uint16_t templateId;
+            if (enrollmentStore.getFingerMapping(id, f, templateId))
+                Serial.printf("  %s (id=%u): finger[%d]=template#%u\n", EMPLOYEES[i].name, id, f, templateId);
+        }
+    }
+    Serial.println("============================");
 
     screenManager = new ScreenManager(DisplayManager::getInstance(), timeManager, wifiManager, buttonManager,
                                        fingerprintService, rfidService, enrollmentStore);

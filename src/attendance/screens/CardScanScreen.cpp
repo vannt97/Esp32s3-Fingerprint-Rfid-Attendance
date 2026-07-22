@@ -91,8 +91,15 @@ void CardScanScreen::loop()
     case State::DETECTED:
         if (btn == Button::SELECT)
         {
-            _screenManager.getEnrollmentStore().saveCardMapping(
-                _screenManager.getSelectedEmployeeId(), _uid);
+            uint16_t employeeId = _screenManager.getSelectedEmployeeId();
+            auto &store = _screenManager.getEnrollmentStore();
+            store.saveCardMapping(employeeId, _uid);
+
+            String verify;
+            store.getCardMapping(employeeId, verify);
+            Serial.printf("[Enroll] employee=%u card_uid=%s (saved=%s)\n",
+                           employeeId, verify.c_str(), verify == _uid ? "OK" : "MISMATCH");
+
             _enterState(State::SUCCESS);
         }
         break;
