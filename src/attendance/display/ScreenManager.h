@@ -13,6 +13,7 @@
 #include "services/FingerprintService.h"
 #include "services/RfidService.h"
 #include "services/EnrollmentStore.h"
+#include "services/AttendanceLog.h"
 #include "screens/EnrollTarget.h"
 #include "screens/EmployeeSelectScreen.h"
 #include "screens/BoardInfoScreen.h"
@@ -30,7 +31,7 @@ class ScreenManager
 {
 public:
     explicit ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm,
-                            FingerprintService &fps, RfidService &rs, EnrollmentStore &es);
+                            FingerprintService &fps, RfidService &rs, EnrollmentStore &es, AttendanceLog &al);
 
     void showScreen(ScreenId id);
 
@@ -41,6 +42,7 @@ public:
     FingerprintService &getFingerprintService() { return _fingerprintService; }
     RfidService &getRfidService() { return _rfidService; }
     EnrollmentStore &getEnrollmentStore() { return _enrollmentStore; }
+    AttendanceLog &getAttendanceLog() { return _attendanceLog; }
     IScreen *getCurrentScreen();
     void loop();
 
@@ -63,6 +65,7 @@ private:
     FingerprintService &_fingerprintService;
     RfidService &_rfidService;
     EnrollmentStore &_enrollmentStore;
+    AttendanceLog &_attendanceLog;
     IScreen *_currentScreen = nullptr;
     int _selectedFingerIndex = 0;
     uint16_t _selectedEmployeeId = 0;

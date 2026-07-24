@@ -9,7 +9,13 @@ bool EnrollmentStore::saveFingerMapping(uint16_t employeeId, uint8_t fingerPosit
 {
     char key[16];
     snprintf(key, sizeof(key), "f%u_%u", employeeId, fingerPosition);
-    return _prefs.putUInt(key, templateId) > 0;
+    bool ok = _prefs.putUInt(key, templateId) > 0;
+
+    char reverseKey[16];
+    snprintf(reverseKey, sizeof(reverseKey), "t%u", templateId);
+    _prefs.putUInt(reverseKey, employeeId);
+
+    return ok;
 }
 
 bool EnrollmentStore::saveCardMapping(uint16_t employeeId, const String &uid)
@@ -36,5 +42,15 @@ bool EnrollmentStore::getCardMapping(uint16_t employeeId, String &uidOut)
     if (!_prefs.isKey(key))
         return false;
     uidOut = _prefs.getString(key);
+    return true;
+}
+
+bool EnrollmentStore::findEmployeeByTemplateId(uint16_t templateId, uint16_t &employeeIdOut)
+{
+    char key[16];
+    snprintf(key, sizeof(key), "t%u", templateId);
+    if (!_prefs.isKey(key))
+        return false;
+    employeeIdOut = (uint16_t)_prefs.getUInt(key);
     return true;
 }

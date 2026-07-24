@@ -38,6 +38,30 @@ bool FingerprintService::isFingerRemoved()
     return _finger.getImage() == FINGERPRINT_NOFINGER;
 }
 
+FingerVerifyResult FingerprintService::verifyStep(uint16_t &templateIdOut, uint16_t &confidenceOut)
+{
+    _lastError = _finger.getImage();
+    if (_lastError == FINGERPRINT_NOFINGER)
+        return FingerVerifyResult::NO_FINGER;
+    if (_lastError != FINGERPRINT_OK)
+        return FingerVerifyResult::ERROR;
+
+    _lastError = _finger.image2Tz();
+    if (_lastError != FINGERPRINT_OK)
+        return FingerVerifyResult::ERROR;
+
+    _lastError = _finger.fingerSearch();
+    if (_lastError == FINGERPRINT_OK)
+    {
+        templateIdOut = _finger.fingerID;
+        confidenceOut = _finger.confidence;
+        return FingerVerifyResult::MATCHED;
+    }
+    if (_lastError == FINGERPRINT_NOTFOUND)
+        return FingerVerifyResult::NOT_FOUND;
+    return FingerVerifyResult::ERROR;
+}
+
 bool FingerprintService::convertImage(uint8_t slot)
 {
     _lastError = _finger.image2Tz(slot);

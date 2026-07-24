@@ -8,6 +8,7 @@
 #include "services/FingerprintService.h"
 #include "services/RfidService.h"
 #include "services/EnrollmentStore.h"
+#include "services/AttendanceLog.h"
 #include "screens/EmployeeData.h"
 #include "screens/FingerNames.h"
 
@@ -19,6 +20,7 @@ ButtonManager buttonManager;
 FingerprintService fingerprintService;
 RfidService rfidService;
 EnrollmentStore enrollmentStore;
+AttendanceLog attendanceLog;
 Timeout wifiTimer(CONNECT_WIFI_TIMEOUT);
 Timeout setupTimeTimer(TIME_TIMEOUT);
 
@@ -38,6 +40,12 @@ void setup()
     Serial.printf("Fingerprint sensor: %s\n", fpOk ? "OK" : "NOT FOUND");
     Serial.printf("RFID reader: %s\n", rfidOk ? "OK" : "NOT FOUND");
     enrollmentStore.begin();
+    attendanceLog.begin();
+
+    pinMode(LED_GREEN, OUTPUT);
+    pinMode(LED_RED, OUTPUT);
+    digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_RED, LOW);
 
     // Dump tạm để verify mapping còn sống sau reset (bỏ khi đã có màn hình xem thật).
     Serial.println("=== Enrollment mappings ===");
@@ -57,8 +65,12 @@ void setup()
     }
     Serial.println("============================");
 
+    Serial.println("=== Attendance log ===");
+    attendanceLog.dumpToSerial();
+    Serial.println("======================");
+
     screenManager = new ScreenManager(DisplayManager::getInstance(), timeManager, wifiManager, buttonManager,
-                                       fingerprintService, rfidService, enrollmentStore);
+                                       fingerprintService, rfidService, enrollmentStore, attendanceLog);
 
     while (wifiManager.isConnecting() && wifiTimer.isRunning())
     {

@@ -1,10 +1,14 @@
 #include "HomeScreen.h"
 #include "display/ScreenManager.h"
+#include "screens/EmployeeData.h"
+#include "pins.h"
+
 HomeScreen::HomeScreen(ScreenManager &screenManager)
     : _screenManager(screenManager),
       _displayManager(screenManager.getDisplayManager())
 {
 }
+
 void HomeScreen::onEnter()
 {
     auto td = _screenManager.getTimeManager().getTimeAndDate();
@@ -12,6 +16,12 @@ void HomeScreen::onEnter()
     _data.date = td.date;
     _screenManager.getWifiManager().isConnected() ? _data.wifiConnected = true : _data.wifiConnected = false;
 
+    _idleState = IdleState::CLOCK;
+    _renderClock();
+}
+
+void HomeScreen::_renderClock()
+{
     _displayManager.clear();
 
     // battery_charger_connected
@@ -56,6 +66,21 @@ void HomeScreen::_drawTimeOnly()
     _displayManager.update();
 }
 
+void HomeScreen::_renderResult()
+{
+    _displayManager.clear();
+    _displayManager.setTextColor(SSD1306_WHITE);
+    _displayManager.setTextWrap(false);
+    _displayManager.setTextSize(1);
+
+    if (_resultName.length() > 0)
+        _displayManager.print(4, 20, _resultName);
+
+    _displayManager.print(4, 36, _resultStatus);
+
+    _displayManager.update();
+}
+
 void HomeScreen::onExit()
 {
     _displayManager.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_BLACK);
@@ -63,6 +88,18 @@ void HomeScreen::onExit()
 
 void HomeScreen::loop()
 {
+    if (_idleState == IdleState::RESULT)
+    {
+        if (_resultTimer.isExpired())
+        {
+            digitalWrite(LED_GREEN, LOW);
+            digitalWrite(LED_RED, LOW);
+            _idleState = IdleState::CLOCK;
+            _renderClock();
+        }
+        return;
+    }
+
     if (_getTimeTimer.isExpired())
     {
         auto td = _screenManager.getTimeManager().getTimeAndDate();
@@ -71,6 +108,8 @@ void HomeScreen::loop()
         _data.date = td.date;
         _drawTimeOnly();
     }
+
+    _pollAttendance();
 
     Button btn = _screenManager.getButtonManager().getPressed();
     switch (btn)
@@ -91,4 +130,81 @@ void HomeScreen::loop()
     case Button::NONE:
         break;
     }
+}
+
+void HomeScreen::_pollAttendance()
+{
+    auto &fp = _screenManager.getFingerprintService();
+    uint16_t templateId = 0, confidence = 0;
+    FingerVerifyResult result = fp.verifyStep(templateId, confidence);
+
+    if (result == FingerVerifyResult::MATCHED)
+    {
+        uint16_t employeeId = 0;
+        bool found = _screenManager.getEnrollmentStore().findEmployeeByTemplateId(templateId, employeeId);
+        _showResult(employeeId, found, 'F');
+        return;
+    }
+    if (result == FingerVerifyResult::NOT_FOUND)
+    {
+        _showResult(0, false, 'F');
+        return;
+    }
+    // NO_FINGER / ERROR: bỏ qua, không làm gì
+
+    if (_cardPollTimer.isExpired())
+    {
+        String uid;
+        if (_screenManager.getRfidService().pollCard(uid))
+        {
+            uint16_t employeeId = 0;
+            bool found = false;
+            for (int i = 0; i < EMPLOYEE_COUNT; i++)
+            {
+                String stored;
+                if (_screenManager.getEnrollmentStore().getCardMapping(EMPLOYEES[i].id, stored) && stored == uid)
+                {
+                    employeeId = EMPLOYEES[i].id;
+                    found = true;
+                    break;
+                }
+            }
+            _showResult(employeeId, found, 'C');
+        }
+    }
+}
+
+void HomeScreen::_showResult(uint16_t employeeId, bool found, char method)
+{
+    if (found)
+    {
+        const char *name = "?";
+        for (int i = 0; i < EMPLOYEE_COUNT; i++)
+        {
+            if (EMPLOYEES[i].id == employeeId)
+            {
+                name = EMPLOYEES[i].name;
+                break;
+            }
+        }
+
+        time_t epoch = _screenManager.getTimeManager().getEpoch();
+        _screenManager.getAttendanceLog().append(employeeId, method, epoch);
+
+        _resultName = name;
+        _resultStatus = "Checked in!";
+        digitalWrite(LED_GREEN, HIGH);
+        digitalWrite(LED_RED, LOW);
+    }
+    else
+    {
+        _resultName = "";
+        _resultStatus = "Not registered";
+        digitalWrite(LED_RED, HIGH);
+        digitalWrite(LED_GREEN, LOW);
+    }
+
+    _idleState = IdleState::RESULT;
+    _resultTimer.reset();
+    _renderResult();
 }

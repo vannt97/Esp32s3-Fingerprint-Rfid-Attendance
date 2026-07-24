@@ -2,7 +2,7 @@
 
 // ── Constructor nhận DisplayManager ───────────
 ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm,
-                              FingerprintService &fps, RfidService &rs, EnrollmentStore &es)
+                              FingerprintService &fps, RfidService &rs, EnrollmentStore &es, AttendanceLog &al)
     : _displayManager(displayManager),
       _timeManager(tm),
       _wifiManager(wm),
@@ -10,6 +10,7 @@ ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, Wi
       _fingerprintService(fps),
       _rfidService(rs),
       _enrollmentStore(es),
+      _attendanceLog(al),
       _menuScreen(*this), // truyền ScreenManager vào MenuScreen
       _homeScreen(*this),
       _connectingWifiScreen(*this),

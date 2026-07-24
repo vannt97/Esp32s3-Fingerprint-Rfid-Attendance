@@ -76,3 +76,11 @@ TimeStringData TimeManager::getTimeAndDate()
 
     return {String(timeBuf), String(dateBuf)};
 }
+
+time_t TimeManager::getEpoch()
+{
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo, 0))
+        return 0;
+    return mktime(&timeinfo);
+}

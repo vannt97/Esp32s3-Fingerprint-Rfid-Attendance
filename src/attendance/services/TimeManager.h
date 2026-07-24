@@ -34,6 +34,9 @@ public:
 
     TimeStringData getTimeAndDate();
 
+    // Epoch Unix — dùng làm timestamp cho log chấm công. Trả 0 nếu chưa sync NTP.
+    time_t getEpoch();
+
 private:
     const char* _ntpServer   = NTP_SERVER;
     const char* _ntpServer2  = NTP_SERVER2;

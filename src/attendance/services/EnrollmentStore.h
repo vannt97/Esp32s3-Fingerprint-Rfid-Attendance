@@ -17,6 +17,10 @@ public:
     bool getFingerMapping(uint16_t employeeId, uint8_t fingerPosition, uint16_t &templateIdOut);
     bool getCardMapping(uint16_t employeeId, String &uidOut);
 
+    // Tra cứu ngược cho check-in: AS608 fingerSearch() trả về templateId,
+    // cần suy ra employeeId tương ứng.
+    bool findEmployeeByTemplateId(uint16_t templateId, uint16_t &employeeIdOut);
+
 private:
     Preferences _prefs;
 };

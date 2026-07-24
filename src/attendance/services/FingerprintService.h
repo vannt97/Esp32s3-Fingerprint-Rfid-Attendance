@@ -10,6 +10,14 @@ enum class FingerStepResult
     ERROR
 };
 
+enum class FingerVerifyResult
+{
+    NO_FINGER,
+    MATCHED,
+    NOT_FOUND,
+    ERROR
+};
+
 // Bọc Adafruit_Fingerprint (AS608, UART1) theo pin/baud trong pins.h.
 // Mỗi hàm chỉ gọi 1 lệnh UART duy nhất (không dùng vòng while chờ) để phù
 // hợp với vòng loop() cooperative của ScreenManager — screen tự gọi lại
@@ -24,6 +32,9 @@ public:
 
     FingerStepResult captureStep();
     bool isFingerRemoved();
+
+    // Nhận diện (check-in) — khác enroll, tìm trong toàn bộ template đã lưu.
+    FingerVerifyResult verifyStep(uint16_t &templateIdOut, uint16_t &confidenceOut);
     bool convertImage(uint8_t slot);
     bool createModel();
     uint16_t allocateNextTemplateId();
