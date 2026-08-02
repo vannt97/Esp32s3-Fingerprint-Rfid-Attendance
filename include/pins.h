@@ -9,9 +9,11 @@
 #define PN532_SDA_PIN  8
 #define PN532_SCL_PIN  9
 
-// Status LEDs (optional)
-#define LED_GREEN   5
-#define LED_RED     6
+// Status LEDs (optional) — đổi khỏi GPIO 5/6 vì trùng chân I2S của loa
+// MAX98357A bên dưới (xem ghi chú ở đó). Sửa lại 2 số này nếu bạn đã nối
+// LED vào chân khác trên board thật.
+#define LED_GREEN   15
+#define LED_RED     16
 
 // SSD1306 OLED — Wire1 (độc lập với PN532 trên Wire)
 // ESP32-S3 không có GPIO 22/23; GPIO 19/20 = USB; GPIO 48 = RGB LED
@@ -21,10 +23,9 @@
 #define OLED_WIDTH    128
 #define OLED_HEIGHT   64
 
-// MAX98357A I2S Amp — dùng riêng cho env:test_audio
-// LƯU Ý: GPIO 5/6 trùng với LED_GREEN/LED_RED ở trên. Không sao khi chạy
-// test_audio độc lập, nhưng nếu gộp chung vào firmware attendance sau này
-// phải đổi chân LED hoặc đổi chân I2S để tránh xung đột.
+// MAX98357A I2S Amp — dùng cho env:test_audio và env:attendance
+// (AudioFeedback). Trước đây GPIO 5/6 trùng LED_GREEN/LED_RED — đã đổi
+// LED sang 15/16 ở trên để hết xung đột.
 #define I2S_BCLK_PIN  6   // MAX98357A BCLK
 #define I2S_LRC_PIN   7   // MAX98357A LRC (WS)
 #define I2S_DOUT_PIN  5   // MAX98357A DIN
