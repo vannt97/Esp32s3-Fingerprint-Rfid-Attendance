@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-h2&czl4hcggibi=_m8k5e&f5=rk3z#hzroxl1962%%%w#o%&ai
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Chạy nội bộ/dev qua Docker trên nhiều máy khác nhau (LAN), không phải
+# production — chấp nhận mọi host. Xem lại khi deploy thật.
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
