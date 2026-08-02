@@ -2,7 +2,8 @@
 
 // ── Constructor nhận DisplayManager ───────────
 ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm,
-                              FingerprintService &fps, RfidService &rs, EnrollmentStore &es, AttendanceLog &al)
+                              FingerprintService &fps, RfidService &rs, EnrollmentStore &es, AttendanceLog &al,
+                              AudioFeedback &af, EmployeeStore &emps, ApiService &api)
     : _displayManager(displayManager),
       _timeManager(tm),
       _wifiManager(wm),
@@ -11,6 +12,9 @@ ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, Wi
       _rfidService(rs),
       _enrollmentStore(es),
       _attendanceLog(al),
+      _audioFeedback(af),
+      _employeeStore(emps),
+      _apiService(api),
       _menuScreen(*this), // truyền ScreenManager vào MenuScreen
       _homeScreen(*this),
       _connectingWifiScreen(*this),
@@ -26,7 +30,8 @@ ScreenManager::ScreenManager(DisplayManager &displayManager, TimeManager &tm, Wi
       _fingerSelectScreen(*this),
       _fingerScanScreen(*this),
       _usersScreen(*this),
-      _cardScanScreen(*this)
+      _cardScanScreen(*this),
+      _deleteEnrollmentScreen(*this)
 
 {
 }
@@ -61,6 +66,7 @@ void ScreenManager::showScreen(ScreenId id)
         case ScreenId::FINGER_SCAN:     target = &_fingerScanScreen;      break;
         case ScreenId::USERS:           target = &_usersScreen;           break;
         case ScreenId::CARD_SCAN:       target = &_cardScanScreen;        break;
+        case ScreenId::DELETE_ENROLLMENT: target = &_deleteEnrollmentScreen; break;
     }
     _switchTo(target);
 }

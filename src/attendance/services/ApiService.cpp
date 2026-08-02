@@ -1,0 +1,109 @@
+#include "ApiService.h"
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include "config.h"
+#include "EmployeeStore.h"
+#include "AttendanceLog.h"
+
+bool ApiService::begin()
+{
+    return _prefs.begin("sync", false);
+}
+
+bool ApiService::fetchEmployees(EmployeeStore &store)
+{
+    if (WiFi.status() != WL_CONNECTED)
+        return false;
+
+    HTTPClient http;
+    http.setConnectTimeout(2000);
+    http.setTimeout(3000);
+    http.begin(String(API_BASE_URL) + "/api/employees/");
+    http.addHeader("Authorization", String("Token ") + API_DEVICE_TOKEN);
+
+    int code = http.GET();
+    if (code != HTTP_CODE_OK)
+    {
+        http.end();
+        return false;
+    }
+
+    bool ok = store.replaceAllFromStream(http.getStream());
+    http.end();
+    return ok;
+}
+
+bool ApiService::pushAttendanceRecord(uint16_t employeeId, char method, time_t epoch,
+                                       const String &clientRecordId)
+{
+    if (WiFi.status() != WL_CONNECTED)
+        return false;
+
+    struct tm tmUtc;
+    gmtime_r(&epoch, &tmUtc);
+    char isoBuf[25];
+    snprintf(isoBuf, sizeof(isoBuf), "%04d-%02d-%02dT%02d:%02d:%02dZ",
+             tmUtc.tm_year + 1900, tmUtc.tm_mon + 1, tmUtc.tm_mday,
+             tmUtc.tm_hour, tmUtc.tm_min, tmUtc.tm_sec);
+
+    JsonDocument doc;
+    doc["employee"] = employeeId;
+    doc["method"] = String(method);
+    doc["event_time"] = isoBuf;
+    doc["client_record_id"] = clientRecordId;
+    String body;
+    serializeJson(doc, body);
+
+    HTTPClient http;
+    http.setConnectTimeout(2000);
+    http.setTimeout(2500);
+    http.begin(String(API_BASE_URL) + "/api/attendance/");
+    http.addHeader("Authorization", String("Token ") + API_DEVICE_TOKEN);
+    http.addHeader("Content-Type", "application/json");
+
+    int code = http.POST(body);
+    http.end();
+    return code == 200 || code == 201;
+}
+
+void ApiService::syncPendingAttendance(AttendanceLog &log)
+{
+    if (WiFi.status() != WL_CONNECTED)
+        return;
+
+    size_t total = log.size();
+    size_t offset = _prefs.getULong("offset", 0);
+    if (offset > total)
+        offset = total; // log nhỏ hơn kỳ vọng (reset/hỏng) — coi như đã đồng bộ hết
+
+    int sent = 0;
+    while (sent < MAX_RECORDS_PER_CALL && offset < total)
+    {
+        String chunk = log.readRange(offset, 512);
+        int nl = chunk.indexOf('\n');
+        if (nl < 0)
+            break; // chưa đủ 1 dòng hoàn chỉnh trong chunk, chờ lần gọi sau
+
+        String line = chunk.substring(0, nl);
+        long epochLong = 0;
+        unsigned int employeeId = 0;
+        char method = 0;
+        int parsed = sscanf(line.c_str(), "%ld,%u,%c", &epochLong, &employeeId, &method);
+        if (parsed != 3)
+        {
+            // Dòng lỗi (không nên xảy ra) — bỏ qua để không kẹt vòng lặp mãi.
+            offset += nl + 1;
+            _prefs.putULong("offset", offset);
+            continue;
+        }
+
+        String clientId = String(epochLong) + "-" + String(employeeId) + "-" + String(method);
+        if (!pushAttendanceRecord((uint16_t)employeeId, method, (time_t)epochLong, clientId))
+            break; // lỗi mạng — dừng, giữ nguyên offset để thử lại đúng từ đây
+
+        offset += nl + 1;
+        _prefs.putULong("offset", offset);
+        sent++;
+    }
+}

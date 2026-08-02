@@ -31,7 +31,7 @@ void UsersScreen::_render()
     for (int i = 0; i < VISIBLE_COUNT; i++)
     {
         int itemIndex = _windowStart + i;
-        if (itemIndex >= EMPLOYEE_COUNT)
+        if (itemIndex >= _screenManager.getEmployeeStore().count())
             break;
 
         int y = ITEM_Y0 + i * ITEM_HEIGHT;
@@ -44,7 +44,7 @@ void UsersScreen::_render()
         {
             _displayManager.setTextColor(SSD1306_WHITE);
         }
-        _displayManager.print(4, y, EMPLOYEES[itemIndex].name);
+        _displayManager.print(4, y, _screenManager.getEmployeeStore().at(itemIndex).name);
     }
 
     _displayManager.setTextColor(SSD1306_WHITE);
@@ -62,10 +62,10 @@ void UsersScreen::_drawScrollbar()
 
     _displayManager.drawLine(trackX, trackY, trackX, trackY + trackH, SSD1306_WHITE);
 
-    int thumbH = trackH * VISIBLE_COUNT / EMPLOYEE_COUNT;
+    int thumbH = trackH * VISIBLE_COUNT / _screenManager.getEmployeeStore().count();
     if (thumbH < 3) thumbH = 3;
 
-    int maxStart = EMPLOYEE_COUNT - VISIBLE_COUNT;
+    int maxStart = _screenManager.getEmployeeStore().count() - VISIBLE_COUNT;
     int thumbY = trackY;
     if (maxStart > 0)
         thumbY = trackY + (trackH - thumbH) * _windowStart / maxStart;
@@ -88,7 +88,7 @@ void UsersScreen::loop()
         }
         break;
     case Button::DOWN:
-        if (_selectedIndex < EMPLOYEE_COUNT - 1)
+        if (_selectedIndex < _screenManager.getEmployeeStore().count() - 1)
         {
             _selectedIndex++;
             if (_selectedIndex >= _windowStart + VISIBLE_COUNT)

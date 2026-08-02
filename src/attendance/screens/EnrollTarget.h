@@ -1,10 +1,11 @@
 #pragma once
 
-// EnrollScreen chọn loại enroll (vân tay/thẻ) trước, EmployeeSelectScreen
-// dùng giá trị này để biết sau khi chọn nhân viên xong thì rẽ sang
-// FINGER_SELECT hay CARD_SCAN.
+// EnrollScreen/EmployeeScreen đặt giá trị này trước khi vào
+// EmployeeSelectScreen, để biết sau khi chọn nhân viên xong thì rẽ sang
+// FINGER_SELECT, CARD_SCAN hay DELETE_ENROLLMENT.
 enum class EnrollTarget
 {
     FINGER,
     CARD,
+    DELETE,
 };

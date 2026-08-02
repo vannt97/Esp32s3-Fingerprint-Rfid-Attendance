@@ -54,3 +54,29 @@ bool EnrollmentStore::findEmployeeByTemplateId(uint16_t templateId, uint16_t &em
     employeeIdOut = (uint16_t)_prefs.getUInt(key);
     return true;
 }
+
+bool EnrollmentStore::removeFingerMapping(uint16_t employeeId, uint8_t fingerPosition, uint16_t &deletedTemplateIdOut)
+{
+    if (!getFingerMapping(employeeId, fingerPosition, deletedTemplateIdOut))
+        return false;
+
+    char key[16];
+    snprintf(key, sizeof(key), "f%u_%u", employeeId, fingerPosition);
+    _prefs.remove(key);
+
+    char reverseKey[16];
+    snprintf(reverseKey, sizeof(reverseKey), "t%u", deletedTemplateIdOut);
+    _prefs.remove(reverseKey);
+
+    return true;
+}
+
+bool EnrollmentStore::removeCardMapping(uint16_t employeeId)
+{
+    char key[16];
+    snprintf(key, sizeof(key), "c%u", employeeId);
+    if (!_prefs.isKey(key))
+        return false;
+    _prefs.remove(key);
+    return true;
+}

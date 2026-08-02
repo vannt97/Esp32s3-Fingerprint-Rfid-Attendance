@@ -1,6 +1,5 @@
 #include "HomeScreen.h"
 #include "display/ScreenManager.h"
-#include "screens/EmployeeData.h"
 #include "pins.h"
 
 HomeScreen::HomeScreen(ScreenManager &screenManager)
@@ -157,14 +156,15 @@ void HomeScreen::_pollAttendance()
         String uid;
         if (_screenManager.getRfidService().pollCard(uid))
         {
+            auto &employeeStore = _screenManager.getEmployeeStore();
             uint16_t employeeId = 0;
             bool found = false;
-            for (int i = 0; i < EMPLOYEE_COUNT; i++)
+            for (int i = 0; i < employeeStore.count(); i++)
             {
                 String stored;
-                if (_screenManager.getEnrollmentStore().getCardMapping(EMPLOYEES[i].id, stored) && stored == uid)
+                if (_screenManager.getEnrollmentStore().getCardMapping(employeeStore.at(i).id, stored) && stored == uid)
                 {
-                    employeeId = EMPLOYEES[i].id;
+                    employeeId = employeeStore.at(i).id;
                     found = true;
                     break;
                 }
@@ -178,23 +178,18 @@ void HomeScreen::_showResult(uint16_t employeeId, bool found, char method)
 {
     if (found)
     {
-        const char *name = "?";
-        for (int i = 0; i < EMPLOYEE_COUNT; i++)
-        {
-            if (EMPLOYEES[i].id == employeeId)
-            {
-                name = EMPLOYEES[i].name;
-                break;
-            }
-        }
+        Employee emp;
+        const char *name = _screenManager.getEmployeeStore().findById(employeeId, emp) ? emp.name : "?";
 
         time_t epoch = _screenManager.getTimeManager().getEpoch();
         _screenManager.getAttendanceLog().append(employeeId, method, epoch);
+        _screenManager.getApiService().syncPendingAttendance(_screenManager.getAttendanceLog());
 
         _resultName = name;
         _resultStatus = "Checked in!";
         digitalWrite(LED_GREEN, HIGH);
         digitalWrite(LED_RED, LOW);
+        _screenManager.getAudioFeedback().playSuccess();
     }
     else
     {
@@ -202,6 +197,7 @@ void HomeScreen::_showResult(uint16_t employeeId, bool found, char method)
         _resultStatus = "Not registered";
         digitalWrite(LED_RED, HIGH);
         digitalWrite(LED_GREEN, LOW);
+        _screenManager.getAudioFeedback().playFailure();
     }
 
     _idleState = IdleState::RESULT;

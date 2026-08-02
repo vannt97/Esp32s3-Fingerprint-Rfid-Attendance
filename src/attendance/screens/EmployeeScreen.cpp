@@ -1,6 +1,11 @@
 #include "EmployeeScreen.h"
 #include "display/ScreenManager.h"
 
+// Cần định nghĩa ngoài class cho static constexpr array vì ITEM_NAMES[i]
+// (i là biến chạy, không phải hằng số) ODR-use nó — thiếu dòng này linker
+// báo "undefined reference" khi mảng có từ 3 phần tử trở lên.
+constexpr const char *EmployeeScreen::ITEM_NAMES[];
+
 EmployeeScreen::EmployeeScreen(ScreenManager &sm)
     : _screenManager(sm),
       _displayManager(sm.getDisplayManager())
@@ -58,10 +63,19 @@ void EmployeeScreen::loop()
         if (_menuIdx < ITEM_COUNT - 1) { _menuIdx++; _render(); }
         break;
     case Button::SELECT:
-        if (_menuIdx == 0)
+        switch (_menuIdx)
+        {
+        case 0:
             _screenManager.showScreen(ScreenId::ENROLL);
-        else
+            break;
+        case 1:
             _screenManager.showScreen(ScreenId::USERS);
+            break;
+        case 2:
+            _screenManager.setPendingEnrollTarget(EnrollTarget::DELETE);
+            _screenManager.showScreen(ScreenId::EMPLOYEE_SELECT);
+            break;
+        }
         break;
     case Button::EXIT:
         _screenManager.showScreen(ScreenId::MENU);

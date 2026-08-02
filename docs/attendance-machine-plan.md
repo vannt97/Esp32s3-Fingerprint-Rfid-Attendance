@@ -72,12 +72,92 @@ có sẵn (không làm dashboard riêng), chưa nối firmware↔Django lần n�
       cùng `client_record_id` (không tạo bản ghi mới), request thiếu token
       trả 401. DB cuối cùng có đúng 2 bản ghi test.
 
-## Giới hạn đã biết (chưa xử lý lần này)
+## Phần C — Sửa nền tảng (WiFi reconnect loop, time sync retry)
 
-- WiFi/NTP chưa sync lúc chấm công → epoch ghi 0.
-- Tra thẻ (RFID) trên thiết bị bằng quét tuyến tính 5 nhân viên mock —
-  cần đổi khi có danh sách thật từ `/api/employees/`.
-- `/attendance.log` trên thiết bị chỉ tăng dần, chưa dọn/đồng bộ.
-- Chưa nối firmware gọi API Django (task riêng sau, cần `ApiService` +
-  HTTPS + hàng đợi offline).
-- Chưa deploy production cho Django (chạy `runserver` cho dev/test).
+- [x] **C1.** `main.cpp`: thêm `wifiManager.loop()` vào `loop()` (trước đây
+      chưa từng được gọi — state machine reconnect bị đứng sau boot).
+- [x] **C2.** `TimeManager::begin()`: đổi sang `configTzTime("<+07>-7", ...)`
+      tường minh thay vì dựa hành vi ngầm của `configTime()`.
+- [x] **C3.** `main.cpp`: cờ `timeSyncStarted`, thử `timeManager.begin()`
+      ngay lần đầu WiFi kết nối được sau boot (không chỉ đúng lúc `setup()`).
+
+## Phần D — `AttendanceLog`: đọc để phục vụ đồng bộ
+
+- [x] **D1.** Thêm `size()`/`readRange(fromOffset, maxBytes)`.
+- [x] **D2.** `append()` ghi 1 lần bằng buffer cục bộ (thay vì nhiều
+      `f.printf()`); `begin()` cắt bỏ dòng cuối dở dang nếu có (mất điện
+      giữa lúc ghi).
+
+## Phần E — `EmployeeStore`: đồng bộ danh sách nhân viên (thay mock)
+
+- [x] **E1.** Service mới `EmployeeStore` (`src/attendance/services/`) —
+      cache LittleFS `/employees.json`, seed từ `EMPLOYEE_SEED[]`
+      (`EmployeeData.h`, đổi tên từ `EMPLOYEES[]`) nếu chưa từng sync.
+- [x] **E2.** Cập nhật `UsersScreen`, `EmployeeSelectScreen`, `HomeScreen`,
+      `main.cpp` (debug dump) sang gọi `ScreenManager::getEmployeeStore()`
+      thay vì mảng mock trực tiếp.
+- [x] **E3.** Wire vào `ScreenManager` (tham số constructor + getter).
+
+## Phần F — `ApiService`: đẩy log chấm công + hàng đợi offline
+
+- [x] **F1.** `include/config.h` thêm `API_BASE_URL`, `API_DEVICE_TOKEN`,
+      `API_ATTENDANCE_SYNC_INTERVAL_MS` (~60s), `API_EMPLOYEE_REFETCH_INTERVAL_MS` (~30 phút).
+- [x] **F2.** Service mới `ApiService` — `fetchEmployees()` (GET, stream
+      thẳng vào `EmployeeStore`), `pushAttendanceRecord()` (POST, ISO8601
+      UTC + `client_record_id`), `syncPendingAttendance()` (đọc tối đa ~10
+      bản ghi/lần từ `AttendanceLog`, dừng ngay khi gửi lỗi, chỉ lưu tiến
+      độ offset sau mỗi dòng gửi thành công). Mọi hàm gate theo
+      `WiFi.isConnected()` + timeout ngắn (2-3s) để không đứng UI khi mất
+      mạng/server sập.
+- [x] **F3.** Wire vào `main.cpp` (fetch lúc boot + 2 `Timeout` định kỳ)
+      và `HomeScreen::_showResult()` (đẩy ngay sau mỗi lần chấm công,
+      dùng chung hàm với vòng thử lại định kỳ).
+
+## Phần G — Xóa enrollment (vân tay/thẻ)
+
+- [x] **G1.** `FingerprintService::deleteTemplate()` (bọc AS608
+      `deleteModel()`), `EnrollmentStore::removeFingerMapping()` /
+      `removeCardMapping()` (xóa cả key thuận lẫn ngược).
+- [x] **G2.** `EnrollTarget::DELETE`, `ScreenId::DELETE_ENROLLMENT`,
+      `EmployeeScreen` thêm mục "Delete" (`ITEM_COUNT` 2→3).
+- [x] **G3.** `EmployeeSelectScreen` — sửa từ rẽ nhị phân sang switch 3
+      nhánh tường minh (SELECT), EXIT có điều kiện theo target (DELETE →
+      `EMPLOYEE`, còn lại → `ENROLL`) — bắt buộc sửa, không thì DELETE rơi
+      nhầm vào luồng CARD_SCAN.
+- [x] **G4.** Màn hình mới `DeleteEnrollmentScreen` — danh sách ĐỘNG (chỉ
+      liệt kê đúng finger/card nhân viên đã chọn thực sự có), chọn 1 mục
+      → xác nhận (SELECT=Yes/EXIT=No) → xóa cả AS608 lẫn NVS → "Deleted!"
+      → dựng lại danh sách. Đăng ký vào `ScreenManager`.
+
+## Phần H — Phản hồi âm thanh khi chấm công
+
+- [x] **H1.** Dọn `data/` — chuyển ảnh/README sang `docs/screenshots/`
+      (chỉ còn 2 file mp3 để `uploadfs` không đẩy nhầm ~6MB ảnh lên LittleFS).
+- [x] **H2.** `include/pins.h` — đổi `LED_GREEN`/`LED_RED` sang GPIO 15/16
+      (hết đụng chân I2S của loa MAX98357A, vốn dùng GPIO 5/6).
+- [x] **H3.** `platformio.ini` — thêm `esphome/ESP32-audioI2S` vào
+      `env:attendance`.
+- [x] **H4.** Service mới `AudioFeedback` (bọc thư viện `Audio`) —
+      `playSuccess()`/`playFailure()`, `loop()` gọi mỗi tick không gate
+      theo màn hình. Gọi từ `HomeScreen::_showResult()`.
+
+## Giới hạn đã biết (chưa xử lý)
+
+- `API_BASE_URL` phải sửa tay đúng IP LAN thật của máy chạy Django —
+  không có cơ chế tự dò (mDNS/service discovery).
+- HTTP thường (không TLS) giữa ESP32↔Django — chỉ an toàn trong LAN riêng
+  tin cậy.
+- `allocateNextTemplateId()` không tái sử dụng ID sau khi xóa (bộ đếm chỉ
+  tăng) — enroll/xóa lặp lại nhiều lần có thể báo "Storage full" dù còn
+  ít vân tay thực tế. Cần API cấp thấp hơn (`nvs_entry_find`) mới tái chế
+  được ID — ngoài phạm vi hiện tại.
+- Chỉ tính cho 1 thiết bị — template ID trên AS608 đánh số cục bộ riêng
+  từng máy.
+- Mapping vân tay/thẻ ↔ nhân viên vẫn chỉ nằm trên thiết bị, KHÔNG đẩy
+  lên Django — mất thiết bị/reset NVS thì phải enroll lại toàn bộ.
+- Chưa deploy production cho Django (chạy `runserver`/`docker compose up`
+  cho dev/nội bộ).
+- **Tất cả Phần C–H mới chỉ build pass, CHƯA test trên phần cứng thật** —
+  xem mục Kiểm thử trong plan gốc
+  (`/Users/vannt/.claude/plans/sorted-cuddling-koala.md`) để tự flash và
+  đi qua từng bước.

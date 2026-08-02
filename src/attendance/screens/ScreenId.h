@@ -17,4 +17,5 @@ enum class ScreenId {
     FINGER_SCAN,
     USERS,
     CARD_SCAN,
+    DELETE_ENROLLMENT,
 };

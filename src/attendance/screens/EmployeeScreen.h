@@ -18,6 +18,6 @@ private:
     DisplayManager &_displayManager;
 
     int _menuIdx = 0;
-    static constexpr const char* ITEM_NAMES[] = {"Enroll", "Users"};
-    static constexpr int         ITEM_COUNT   = 2;
+    static constexpr const char* ITEM_NAMES[] = {"Enroll", "Users", "Delete"};
+    static constexpr int         ITEM_COUNT   = 3;
 };

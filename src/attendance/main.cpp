@@ -9,7 +9,9 @@
 #include "services/RfidService.h"
 #include "services/EnrollmentStore.h"
 #include "services/AttendanceLog.h"
-#include "screens/EmployeeData.h"
+#include "services/AudioFeedback.h"
+#include "services/EmployeeStore.h"
+#include "services/ApiService.h"
 #include "screens/FingerNames.h"
 
 // ── Khai báo ──────────────────────────────────
@@ -21,8 +23,14 @@ FingerprintService fingerprintService;
 RfidService rfidService;
 EnrollmentStore enrollmentStore;
 AttendanceLog attendanceLog;
+AudioFeedback audioFeedback;
+EmployeeStore employeeStore;
+ApiService apiService;
 Timeout wifiTimer(CONNECT_WIFI_TIMEOUT);
 Timeout setupTimeTimer(TIME_TIMEOUT);
+Timeout attendanceSyncTimer(API_ATTENDANCE_SYNC_INTERVAL_MS);
+Timeout employeeRefetchTimer(API_EMPLOYEE_REFETCH_INTERVAL_MS);
+bool timeSyncStarted = false;
 
 void setup()
 {
@@ -41,6 +49,9 @@ void setup()
     Serial.printf("RFID reader: %s\n", rfidOk ? "OK" : "NOT FOUND");
     enrollmentStore.begin();
     attendanceLog.begin();
+    audioFeedback.begin();
+    employeeStore.begin();
+    apiService.begin();
 
     pinMode(LED_GREEN, OUTPUT);
     pinMode(LED_RED, OUTPUT);
@@ -49,18 +60,18 @@ void setup()
 
     // Dump tạm để verify mapping còn sống sau reset (bỏ khi đã có màn hình xem thật).
     Serial.println("=== Enrollment mappings ===");
-    for (int i = 0; i < EMPLOYEE_COUNT; i++)
+    for (int i = 0; i < employeeStore.count(); i++)
     {
-        uint16_t id = EMPLOYEES[i].id;
+        const Employee &emp = employeeStore.at(i);
         String cardUid;
-        if (enrollmentStore.getCardMapping(id, cardUid))
-            Serial.printf("  %s (id=%u): card=%s\n", EMPLOYEES[i].name, id, cardUid.c_str());
+        if (enrollmentStore.getCardMapping(emp.id, cardUid))
+            Serial.printf("  %s (id=%u): card=%s\n", emp.name, emp.id, cardUid.c_str());
 
         for (int f = 0; f < FINGER_COUNT; f++)
         {
             uint16_t templateId;
-            if (enrollmentStore.getFingerMapping(id, f, templateId))
-                Serial.printf("  %s (id=%u): finger[%d]=template#%u\n", EMPLOYEES[i].name, id, f, templateId);
+            if (enrollmentStore.getFingerMapping(emp.id, f, templateId))
+                Serial.printf("  %s (id=%u): finger[%d]=template#%u\n", emp.name, emp.id, f, templateId);
         }
     }
     Serial.println("============================");
@@ -70,7 +81,8 @@ void setup()
     Serial.println("======================");
 
     screenManager = new ScreenManager(DisplayManager::getInstance(), timeManager, wifiManager, buttonManager,
-                                       fingerprintService, rfidService, enrollmentStore, attendanceLog);
+                                       fingerprintService, rfidService, enrollmentStore, attendanceLog,
+                                       audioFeedback, employeeStore, apiService);
 
     while (wifiManager.isConnecting() && wifiTimer.isRunning())
     {
@@ -81,6 +93,11 @@ void setup()
     if (wifiManager.isConnected())
     {
         timeManager.begin();
+        timeSyncStarted = true;
+
+        bool empOk = apiService.fetchEmployees(employeeStore);
+        Serial.printf("Employee sync: %s (%d employees)\n", empOk ? "OK" : "failed (dùng cache/mock)",
+                      employeeStore.count());
     }
 
     screenManager->showScreen(ScreenId::HOME);
@@ -90,5 +107,20 @@ void setup()
 
 void loop()
 {
+    wifiManager.loop();
+
+    if (!timeSyncStarted && wifiManager.isConnected())
+    {
+        timeManager.begin();
+        timeSyncStarted = true;
+    }
+
+    if (wifiManager.isConnected() && attendanceSyncTimer.isExpired())
+        apiService.syncPendingAttendance(attendanceLog);
+
+    if (wifiManager.isConnected() && employeeRefetchTimer.isExpired())
+        apiService.fetchEmployees(employeeStore);
+
+    audioFeedback.loop();
     screenManager->loop();
 }

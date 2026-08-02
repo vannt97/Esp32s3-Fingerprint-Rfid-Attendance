@@ -31,7 +31,7 @@ void EmployeeSelectScreen::_render()
     for (int i = 0; i < VISIBLE_COUNT; i++)
     {
         int itemIndex = _windowStart + i;
-        if (itemIndex >= EMPLOYEE_COUNT)
+        if (itemIndex >= _screenManager.getEmployeeStore().count())
             break;
 
         int y = ITEM_Y0 + i * ITEM_HEIGHT;
@@ -44,7 +44,7 @@ void EmployeeSelectScreen::_render()
         {
             _displayManager.setTextColor(SSD1306_WHITE);
         }
-        _displayManager.print(4, y, EMPLOYEES[itemIndex].name);
+        _displayManager.print(4, y, _screenManager.getEmployeeStore().at(itemIndex).name);
     }
 
     _displayManager.setTextColor(SSD1306_WHITE);
@@ -63,10 +63,10 @@ void EmployeeSelectScreen::_drawScrollbar()
 
     _displayManager.drawLine(trackX, trackY, trackX, trackY + trackH, SSD1306_WHITE);
 
-    int thumbH = trackH * VISIBLE_COUNT / EMPLOYEE_COUNT;
+    int thumbH = trackH * VISIBLE_COUNT / _screenManager.getEmployeeStore().count();
     if (thumbH < 3) thumbH = 3;
 
-    int maxStart = EMPLOYEE_COUNT - VISIBLE_COUNT;
+    int maxStart = _screenManager.getEmployeeStore().count() - VISIBLE_COUNT;
     int thumbY = trackY;
     if (maxStart > 0)
         thumbY = trackY + (trackH - thumbH) * _windowStart / maxStart;
@@ -89,7 +89,7 @@ void EmployeeSelectScreen::loop()
         }
         break;
     case Button::DOWN:
-        if (_selectedIndex < EMPLOYEE_COUNT - 1)
+        if (_selectedIndex < _screenManager.getEmployeeStore().count() - 1)
         {
             _selectedIndex++;
             if (_selectedIndex >= _windowStart + VISIBLE_COUNT)
@@ -98,14 +98,23 @@ void EmployeeSelectScreen::loop()
         }
         break;
     case Button::SELECT:
-        _screenManager.setSelectedEmployeeId(EMPLOYEES[_selectedIndex].id);
-        if (_screenManager.getPendingEnrollTarget() == EnrollTarget::FINGER)
+        _screenManager.setSelectedEmployeeId(_screenManager.getEmployeeStore().at(_selectedIndex).id);
+        switch (_screenManager.getPendingEnrollTarget())
+        {
+        case EnrollTarget::FINGER:
             _screenManager.showScreen(ScreenId::FINGER_SELECT);
-        else
+            break;
+        case EnrollTarget::CARD:
             _screenManager.showScreen(ScreenId::CARD_SCAN);
+            break;
+        case EnrollTarget::DELETE:
+            _screenManager.showScreen(ScreenId::DELETE_ENROLLMENT);
+            break;
+        }
         break;
     case Button::EXIT:
-        _screenManager.showScreen(ScreenId::ENROLL);
+        _screenManager.showScreen(
+            _screenManager.getPendingEnrollTarget() == EnrollTarget::DELETE ? ScreenId::EMPLOYEE : ScreenId::ENROLL);
         break;
     default:
         break;

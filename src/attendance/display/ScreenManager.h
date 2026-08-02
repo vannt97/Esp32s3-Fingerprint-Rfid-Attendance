@@ -14,6 +14,9 @@
 #include "services/RfidService.h"
 #include "services/EnrollmentStore.h"
 #include "services/AttendanceLog.h"
+#include "services/AudioFeedback.h"
+#include "services/EmployeeStore.h"
+#include "services/ApiService.h"
 #include "screens/EnrollTarget.h"
 #include "screens/EmployeeSelectScreen.h"
 #include "screens/BoardInfoScreen.h"
@@ -27,11 +30,13 @@
 #include "screens/FingerScanScreen.h"
 #include "screens/UsersScreen.h"
 #include "screens/CardScanScreen.h"
+#include "screens/DeleteEnrollmentScreen.h"
 class ScreenManager
 {
 public:
     explicit ScreenManager(DisplayManager &displayManager, TimeManager &tm, WifiManager &wm, ButtonManager &bm,
-                            FingerprintService &fps, RfidService &rs, EnrollmentStore &es, AttendanceLog &al);
+                            FingerprintService &fps, RfidService &rs, EnrollmentStore &es, AttendanceLog &al,
+                            AudioFeedback &af, EmployeeStore &emps, ApiService &api);
 
     void showScreen(ScreenId id);
 
@@ -43,6 +48,9 @@ public:
     RfidService &getRfidService() { return _rfidService; }
     EnrollmentStore &getEnrollmentStore() { return _enrollmentStore; }
     AttendanceLog &getAttendanceLog() { return _attendanceLog; }
+    AudioFeedback &getAudioFeedback() { return _audioFeedback; }
+    EmployeeStore &getEmployeeStore() { return _employeeStore; }
+    ApiService &getApiService() { return _apiService; }
     IScreen *getCurrentScreen();
     void loop();
 
@@ -66,6 +74,9 @@ private:
     RfidService &_rfidService;
     EnrollmentStore &_enrollmentStore;
     AttendanceLog &_attendanceLog;
+    AudioFeedback &_audioFeedback;
+    EmployeeStore &_employeeStore;
+    ApiService &_apiService;
     IScreen *_currentScreen = nullptr;
     int _selectedFingerIndex = 0;
     uint16_t _selectedEmployeeId = 0;
@@ -87,4 +98,5 @@ private:
     FingerScanScreen _fingerScanScreen;
     UsersScreen _usersScreen;
     CardScanScreen _cardScanScreen;
+    DeleteEnrollmentScreen _deleteEnrollmentScreen;
 };

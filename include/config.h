@@ -23,6 +23,14 @@
 #define TIME_TIMEOUT 5000
 #define GET_TIME_TIMEOUT 1000
 
+// Server Django (đồng bộ danh sách nhân viên + đẩy log chấm công)
+// SỬA API_BASE_URL đúng IP LAN của máy đang chạy `docker compose up` trong /server —
+// không dùng "localhost" vì ESP32 là thiết bị khác trên mạng.
+#define API_BASE_URL "http://localhost:8000"
+#define API_DEVICE_TOKEN "c6b064939d0431bb70702b63f18c6e81f4b089db"
+#define API_ATTENDANCE_SYNC_INTERVAL_MS (60UL * 1000UL)
+#define API_EMPLOYEE_REFETCH_INTERVAL_MS (30UL * 60UL * 1000UL)
+
 
 // menu
 #define MAX_MENU_ITEMS 7

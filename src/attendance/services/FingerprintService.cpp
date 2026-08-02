@@ -90,6 +90,12 @@ bool FingerprintService::storeModel(uint16_t id)
     return _lastError == FINGERPRINT_OK;
 }
 
+bool FingerprintService::deleteTemplate(uint16_t id)
+{
+    _lastError = _finger.deleteModel(id);
+    return _lastError == FINGERPRINT_OK;
+}
+
 const char *FingerprintService::lastErrorString() const
 {
     switch (_lastError)

@@ -39,6 +39,7 @@ public:
     bool createModel();
     uint16_t allocateNextTemplateId();
     bool storeModel(uint16_t id);
+    bool deleteTemplate(uint16_t id);
     const char *lastErrorString() const;
 
 private:

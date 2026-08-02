@@ -9,7 +9,9 @@ TimeManager::TimeManager(const char *timezone)
 
 void TimeManager::begin()
 {
-    configTime(_gmtOffset, _daylightOffset, _ntpServer, _ntpServer2);
+    // TZ tường minh (Việt Nam, không DST) thay vì dựa vào hành vi ngầm
+    // của configTime() — configTzTime() tự set TZ đúng theo chuỗi POSIX.
+    configTzTime("<+07>-7", _ntpServer, _ntpServer2);
 }
 
 bool TimeManager::isSynced()

@@ -21,6 +21,12 @@ public:
     // cần suy ra employeeId tương ứng.
     bool findEmployeeByTemplateId(uint16_t templateId, uint16_t &employeeIdOut);
 
+    // Xóa mapping (dùng cho màn hình xóa enrollment). removeFingerMapping
+    // trả ra templateId vừa xóa qua deletedTemplateIdOut để caller gọi
+    // FingerprintService::deleteTemplate() luôn, khỏi tra lại.
+    bool removeFingerMapping(uint16_t employeeId, uint8_t fingerPosition, uint16_t &deletedTemplateIdOut);
+    bool removeCardMapping(uint16_t employeeId);
+
 private:
     Preferences _prefs;
 };
