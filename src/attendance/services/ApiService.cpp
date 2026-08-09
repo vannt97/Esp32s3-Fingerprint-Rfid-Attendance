@@ -67,6 +67,20 @@ bool ApiService::pushAttendanceRecord(uint16_t employeeId, char method, time_t e
     return code == 200 || code == 201;
 }
 
+bool ApiService::_parseLogLine(const String &line, time_t &epochOut, uint16_t &employeeIdOut, char &methodOut)
+{
+    long epochLong = 0;
+    unsigned int employeeId = 0;
+    char method = 0;
+    if (sscanf(line.c_str(), "%ld,%u,%c", &epochLong, &employeeId, &method) != 3)
+        return false;
+
+    epochOut = (time_t)epochLong;
+    employeeIdOut = (uint16_t)employeeId;
+    methodOut = method;
+    return true;
+}
+
 void ApiService::syncPendingAttendance(AttendanceLog &log)
 {
     if (WiFi.status() != WL_CONNECTED)
@@ -86,11 +100,11 @@ void ApiService::syncPendingAttendance(AttendanceLog &log)
             break; // chưa đủ 1 dòng hoàn chỉnh trong chunk, chờ lần gọi sau
 
         String line = chunk.substring(0, nl);
-        long epochLong = 0;
-        unsigned int employeeId = 0;
-        char method = 0;
-        int parsed = sscanf(line.c_str(), "%ld,%u,%c", &epochLong, &employeeId, &method);
-        if (parsed != 3)
+
+        time_t epoch;
+        uint16_t employeeId;
+        char method;
+        if (!_parseLogLine(line, epoch, employeeId, method))
         {
             // Dòng lỗi (không nên xảy ra) — bỏ qua để không kẹt vòng lặp mãi.
             offset += nl + 1;
@@ -98,8 +112,8 @@ void ApiService::syncPendingAttendance(AttendanceLog &log)
             continue;
         }
 
-        String clientId = String(epochLong) + "-" + String(employeeId) + "-" + String(method);
-        if (!pushAttendanceRecord((uint16_t)employeeId, method, (time_t)epochLong, clientId))
+        String clientId = String((long)epoch) + "-" + String(employeeId) + "-" + String(method);
+        if (!pushAttendanceRecord(employeeId, method, epoch, clientId))
             break; // lỗi mạng — dừng, giữ nguyên offset để thử lại đúng từ đây
 
         offset += nl + 1;

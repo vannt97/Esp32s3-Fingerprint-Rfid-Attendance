@@ -29,4 +29,8 @@ private:
     static constexpr int MAX_RECORDS_PER_CALL = 10;
 
     Preferences _prefs; // namespace "sync", key "offset"
+
+    // Parse 1 dòng log "epoch,employeeId,method". Trả false nếu dòng lỗi
+    // format (log bị cắt cụt/hỏng) — caller tự quyết định bỏ qua dòng đó.
+    bool _parseLogLine(const String &line, time_t &epochOut, uint16_t &employeeIdOut, char &methodOut);
 };
