@@ -102,7 +102,6 @@ void setup()
 
     screenManager->showScreen(ScreenId::HOME);
     Serial.println("Setup completed.");
-    // screenManager->showScreen(ScreenId::BOARD_INFO);
 }
 
 void loop()

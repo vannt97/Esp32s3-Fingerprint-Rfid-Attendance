@@ -24,6 +24,9 @@ private:
     void _drawTimeOnly();
     void _renderResult();
     void _pollAttendance();
+    bool _pollFingerprint();
+    bool _pollCard();
+    bool _findEmployeeByCardUid(const String &uid, uint16_t &employeeIdOut);
     void _showResult(uint16_t employeeId, bool found, char method);
 
     HomeData _data = {

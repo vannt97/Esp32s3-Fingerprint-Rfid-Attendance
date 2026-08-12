@@ -133,6 +133,15 @@ void HomeScreen::loop()
 
 void HomeScreen::_pollAttendance()
 {
+    if (_pollFingerprint())
+        return;
+
+    _pollCard();
+}
+
+// true nếu đã có kết quả vân tay (khớp hoặc không khớp) và đã hiện banner.
+bool HomeScreen::_pollFingerprint()
+{
     auto &fp = _screenManager.getFingerprintService();
     uint16_t templateId = 0, confidence = 0;
     FingerVerifyResult result = fp.verifyStep(templateId, confidence);
@@ -142,36 +151,46 @@ void HomeScreen::_pollAttendance()
         uint16_t employeeId = 0;
         bool found = _screenManager.getEnrollmentStore().findEmployeeByTemplateId(templateId, employeeId);
         _showResult(employeeId, found, 'F');
-        return;
+        return true;
     }
     if (result == FingerVerifyResult::NOT_FOUND)
     {
         _showResult(0, false, 'F');
-        return;
+        return true;
     }
     // NO_FINGER / ERROR: bỏ qua, không làm gì
+    return false;
+}
 
-    if (_cardPollTimer.isExpired())
+// true nếu vừa đọc được thẻ và đã hiện banner.
+bool HomeScreen::_pollCard()
+{
+    if (!_cardPollTimer.isExpired())
+        return false;
+
+    String uid;
+    if (!_screenManager.getRfidService().pollCard(uid))
+        return false;
+
+    uint16_t employeeId = 0;
+    bool found = _findEmployeeByCardUid(uid, employeeId);
+    _showResult(employeeId, found, 'C');
+    return true;
+}
+
+bool HomeScreen::_findEmployeeByCardUid(const String &uid, uint16_t &employeeIdOut)
+{
+    auto &employeeStore = _screenManager.getEmployeeStore();
+    for (int i = 0; i < employeeStore.count(); i++)
     {
-        String uid;
-        if (_screenManager.getRfidService().pollCard(uid))
+        String stored;
+        if (_screenManager.getEnrollmentStore().getCardMapping(employeeStore.at(i).id, stored) && stored == uid)
         {
-            auto &employeeStore = _screenManager.getEmployeeStore();
-            uint16_t employeeId = 0;
-            bool found = false;
-            for (int i = 0; i < employeeStore.count(); i++)
-            {
-                String stored;
-                if (_screenManager.getEnrollmentStore().getCardMapping(employeeStore.at(i).id, stored) && stored == uid)
-                {
-                    employeeId = employeeStore.at(i).id;
-                    found = true;
-                    break;
-                }
-            }
-            _showResult(employeeId, found, 'C');
+            employeeIdOut = employeeStore.at(i).id;
+            return true;
         }
     }
+    return false;
 }
 
 void HomeScreen::_showResult(uint16_t employeeId, bool found, char method)
