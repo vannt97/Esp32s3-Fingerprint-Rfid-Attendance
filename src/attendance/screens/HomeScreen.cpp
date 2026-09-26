@@ -139,7 +139,6 @@ void HomeScreen::_pollAttendance()
     _pollCard();
 }
 
-// true nếu đã có kết quả vân tay (khớp hoặc không khớp) và đã hiện banner.
 bool HomeScreen::_pollFingerprint()
 {
     auto &fp = _screenManager.getFingerprintService();
@@ -158,11 +157,9 @@ bool HomeScreen::_pollFingerprint()
         _showResult(0, false, 'F');
         return true;
     }
-    // NO_FINGER / ERROR: bỏ qua, không làm gì
     return false;
 }
 
-// true nếu vừa đọc được thẻ và đã hiện banner.
 bool HomeScreen::_pollCard()
 {
     if (!_cardPollTimer.isExpired())
