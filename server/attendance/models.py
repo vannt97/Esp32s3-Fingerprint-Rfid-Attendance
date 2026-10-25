@@ -34,9 +34,6 @@ class AttendanceRecord(models.Model):
     received_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # client_record_id NULL không bị coi là trùng (chuẩn SQL) nên các
-        # bản ghi hiện tại (chưa gửi client_record_id) vẫn ghi bình thường;
-        # khi ApiService sau này gửi kèm ID thì mới chống được ghi trùng.
         unique_together = [("device", "client_record_id")]
         ordering = ["-event_time"]
 

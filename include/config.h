@@ -15,8 +15,8 @@
 #define NTP_SERVER2 "time.google.com"
 #define GMT_OFFSET 7 * 3600 // GMT+7 Việt Nam
 #define DAYLIGHT_OFFSET 0
-#define WIFI_SSID "LAU 2"
-#define WIFI_PASSWORD "12345678"
+#define WIFI_SSID "Soco Saigon Coffee"
+#define WIFI_PASSWORD "socoxinchao"
 // #define WIFI_SSID "42/3 UVK - GUEST"
 // #define WIFI_PASSWORD "423xinchao"
 #define CONNECT_WIFI_TIMEOUT 10000

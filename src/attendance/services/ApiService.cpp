@@ -62,7 +62,10 @@ bool ApiService::pushAttendanceRecord(uint16_t employeeId, char method, time_t e
     http.addHeader("Authorization", String("Token ") + API_DEVICE_TOKEN);
     http.addHeader("Content-Type", "application/json");
 
+    Serial.printf("[API] POST /api/attendance/ -> %s\n", body.c_str());
     int code = http.POST(body);
+    Serial.printf("[API] <- %d %s\n", code,
+                  code > 0 ? http.getString().c_str() : http.errorToString(code).c_str());
     http.end();
     return code == 200 || code == 201;
 }
