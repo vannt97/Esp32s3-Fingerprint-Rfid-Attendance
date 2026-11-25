@@ -1,6 +1,7 @@
 # Attendance server
 
-Django + Django REST Framework, SQLite. Xem chi tiết thiết kế ở
+Django + Django REST Framework + PostgreSQL (chạy bằng Docker).
+Chạy bằng venv mà không khai báo `POSTGRES_DB` thì dùng tạm SQLite. Xem chi tiết thiết kế ở
 `../docs/attendance-machine-plan.md` (Phần B).
 
 ## Chạy bằng Docker (khuyến nghị — chỉ cần cài Docker)
@@ -12,9 +13,9 @@ docker compose up
 
 Lần đầu chạy sẽ tự động: build image, `migrate`, tạo tài khoản admin từ
 `.env` (mặc định `admin` / `admin123456` — **đổi trước khi dùng thật**),
-rồi chạy server tại `http://localhost:8000/`. Dữ liệu (`db.sqlite3`) nằm
-ngay trong thư mục `server/` (mount volume), không mất khi tắt/bật lại
-container.
+rồi chạy server tại `http://localhost:8000/`. Có 2 container: `db`
+(PostgreSQL 17) và `web` (Django). Dữ liệu PostgreSQL nằm trong Docker
+volume `pgdata`, không mất khi tắt/bật lại container.
 
 - Admin: `http://localhost:8000/admin/`
 - API: `http://localhost:8000/api/employees/`, `http://localhost:8000/api/attendance/`
@@ -22,7 +23,7 @@ container.
 Sửa code Python thì chỉ cần lưu file — server tự reload (đang chạy
 `runserver`, không cần build lại image, vì thư mục được mount trực tiếp).
 
-Dừng: `docker compose down` (không xoá `db.sqlite3`, chỉ tắt container).
+Dừng: `docker compose down` (giữ dữ liệu). `docker compose down -v` sẽ **xoá luôn database**.
 
 ## Chạy không dùng Docker (venv)
 

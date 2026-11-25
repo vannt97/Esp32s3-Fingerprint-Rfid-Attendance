@@ -7,8 +7,8 @@
 // thầm, không thấy gì trên Serial dù phát thất bại.
 void audio_info(const char *info)
 {
-    Serial.print("[Audio] ");
-    Serial.println(info);
+    // Serial.print("[Audio] ");
+    // Serial.println(info);
 }
 
 bool AudioFeedback::begin()
