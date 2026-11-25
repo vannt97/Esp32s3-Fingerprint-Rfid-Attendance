@@ -1,3 +1,7 @@
+// Mẫu cấu hình — copy file này thành config.h rồi điền giá trị thật:
+//   cp include/config.h.example include/config.h
+// config.h đã được .gitignore, KHÔNG commit file chứa mật khẩu/token.
+
 // display — dùng chung pin map với "pins.h" (OLED trên Wire1, tách khỏi PN532/Wire)
 #include "pins.h"
 
@@ -15,10 +19,8 @@
 #define NTP_SERVER2 "time.google.com"
 #define GMT_OFFSET 7 * 3600 // GMT+7 Việt Nam
 #define DAYLIGHT_OFFSET 0
-#define WIFI_SSID "Soco Saigon Coffee"
-#define WIFI_PASSWORD "socoxinchao"
-// #define WIFI_SSID "42/3 UVK - GUEST"
-// #define WIFI_PASSWORD "423xinchao"
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
 #define CONNECT_WIFI_TIMEOUT 10000
 #define TIME_TIMEOUT 5000
 #define GET_TIME_TIMEOUT 1000
@@ -26,8 +28,8 @@
 // Server Django (đồng bộ danh sách nhân viên + đẩy log chấm công)
 // SỬA API_BASE_URL đúng IP LAN của máy đang chạy `docker compose up` trong /server —
 // không dùng "localhost" vì ESP32 là thiết bị khác trên mạng.
-#define API_BASE_URL "http://192.168.1.212:8000"
-#define API_DEVICE_TOKEN "c6b064939d0431bb70702b63f18c6e81f4b089db"
+#define API_BASE_URL "http://192.168.1.x:8000"
+#define API_DEVICE_TOKEN "YOUR_API_DEVICE_TOKEN"
 #define API_ATTENDANCE_SYNC_INTERVAL_MS (60UL * 1000UL)
 #define API_EMPLOYEE_REFETCH_INTERVAL_MS (30UL * 60UL * 1000UL)
 

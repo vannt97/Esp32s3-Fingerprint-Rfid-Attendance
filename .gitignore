@@ -5,3 +5,6 @@
 .vscode/ipch
 /docs/
 
+
+# Local config chứa WiFi/API token — dùng include/config.h.example làm mẫu
+include/config.h
